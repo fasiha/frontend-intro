@@ -8,7 +8,14 @@ Frontend web development is an exciting space to be because
 - there are tons of free resources to host your pages, including GitHub Pages (GitHub will host your static HTML/CSS/JavaScript assets for any repo that has a specifically-named branch, `gh-pages`) and [Glitch.com](https://glitch.com/);
 - many interesting tasks can be done entirely in the frontend, no backend needed: anything that doesn't need coordination between different people or devices.
 
-Making a frontend app though is more than just "learning" a library like React though, because developing JavaScript today is very intricate. I personally have a relatively bare-bones hands-on manually-configured workflow to making frontend apps, which I'll describe here.
+Making a frontend app though is more than just "learning" a library like React though, for a number of reasons.
+- JavaScript has evolved considerable from version 3, released in 1999, to version 5, released 2009, to the monumental version 6, released in 2015. Subsequent versions which continue to add rich features—see Wikipedia's [list of JavaScript versions](https://en.wikipedia.org/wiki/ECMAScript#Versions).
+- Annoyingly, browsers took varying amounts of time to implement JavaScript specifications, so we had several generations transpilers that would convert code using advanced JavaScript features to code that could be run on ES3-only browsers. Babel is the current reigning king, but true compilers like TypeScript also do this.
+- Because the JavaScript specification didn't define the concept of "modules" for a long time, competing standards arose, including the one enshrined by Node.js, a major server-side runtime for JavaScript built around Chrome's JavaScript engine.
+- Because of the cost of HTTP(S) requests over TCP/IP, and the demands of mobile on connectivity and battery, several generations of JavaScript *bundlers* have risen and fallen. Browserify, Webpack, and Rollup are common contenders here. These tools know how to understand various ways of expressing "modules" in JavaScript and can produce a single `bundle.js` file that a browser can load and that contains all the JavaScript that the page will use.
+- Much of this is incidental complexity. There is also a fair amount of essential complexity due to the fact that JavaScript is and always has been by specification a single-threaded language (although the runtimes themselves are of course free to be multi-threaded). Therefore, JavaScript more than any other language is dominated by asynchronous code ("do this, and then when it finishes, do this other thing"), and this style of programming is definitely weird.
+
+I personally have a relatively bare-bones hands-on manually-configured workflow to making frontend apps that seems to control much of the accidental complexity and which I'll describe here.
 
 ## Setup
 
@@ -117,3 +124,39 @@ Some people wear weird socks to express their individuality. I like to omit unne
 - creates a `div` tag into which React will load a component,
 - which happens in the JavaScript file `client.bundle.js` that we have yet to write.
 
+#### `client.js`
+Let's put some code inside `client.js`. This is the basic "Hello world" in ["Introducing JSX"](https://reactjs.org/docs/introducing-jsx.html) chapter of the React Guide:
+```js
+const React = require('react');
+const ReactDOM = require('react-dom');
+
+const ce = React.createElement;
+
+{
+  const element = ce('h1', {}, 'Example 1: Hello World!');
+  ReactDOM.render(element, document.getElementById('example1'));
+}
+```
+
+First, I must note that I personally don't use JSX, for the following reasons:
+- using plain JavaScript instead JSX eliminates the need to use Babel—Babel eats up a lot of my mental complexity budget. Recall that ["JSX Represents Objects"](https://reactjs.org/docs/introducing-jsx.html#jsx-represents-objects), and that "Babel compiles JSX down to `React.createElement()` calls".
+- It annoys me that I have to remember the deviations between HTML and JSX, e.g., in the former we all know to do `<h1 class="c">` but in the latter I must do `<h1 className="c">`, i.e., the difference is `class` versus `className`. Auto-completion in VS Code makes this easy to type but I prefer avoiding the context switch by using an obviously-functional non-HTML way of constructing HTML.
+- But do note that JSX is far simpler than Angular or Svelte markup: there is nothing like `ngIf` or `@html`. Everything you read about JSX can perfectly and straightforwardly translate into using `createElement`, or `ce` as I've aliased it to above.
+
+Now, we cannot load this JavaScript file into the browser because browsers don't understand Node's `require` syntax. Why not? Because Node adopted CommonJS, with its `require`, as its module system before it was specified by the language and before browsers settled on a module system: see [Node documentation](https://nodejs.org/api/modules.html#modules_modules).
+
+And why can't Node use [ES2015 notation](https://devhints.io/es6#modules) using `import`? Because Node hasn't implemented it yet. (Yes, the JavaScript ecosystem makes life very exciting for you.)
+
+So we have to use something that'll take this very Node-infected JavaScript file and spit out something that a browser can understand. There are a host of bundlers of varying complexity out there. A really simple and popular one that I like is Browserify. Let's install it.
+
+#### `npm install browserify`
+Running this at a command prompt installs Browserify into `node_modules`, and adds it to package.json and `packge-lock.json`. To use it right away, run the following in the command prompt:
+```
+./node_modules/.bin/browserify client.js -o client.bundle.js
+```
+This will spit out `client.bundle.js`, which contains the input `client.js` but with all `require` calls replaced by the contents of the JavaScript dependencies (and sub-dependencies) being `require`d.
+
+Go ahead and open `index.html` in your browser to hopefully see "Example 1: Hello World!"!
+
+### Making the workflow more ergonomic
+Notice that, while the plain `client.js` file is less than 300 bytes, the bundle `client.bundle.js` is 1.2 *megabytes*, a 5000-fold weight gain. 
