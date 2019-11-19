@@ -3,7 +3,7 @@
 ## Background
 
 Frontend web development is an exciting space to be because
-- JavaScript runtimes that ship with browsers like Chrome, Firefox, Safari, et al. are incredibly optimized;
+- JavaScript runtimes that ship with browsers like Chrome, Firefox, Safari, et al. are incredibly optimized and very secure;
 - asking your user to refresh the page because you just fixed the bug they were telling you about never gets old;
 - there are tons of free resources to host your pages, including GitHub Pages (GitHub will host your static HTML/CSS/JavaScript assets for any repo that has a specifically-named branch, `gh-pages`) and [Glitch.com](https://glitch.com/);
 - many interesting tasks can be done entirely in the frontend, no backend needed: anything that doesn't need coordination between different people or devices.
@@ -149,8 +149,22 @@ And why can't Node use [ES2015 notation](https://devhints.io/es6#modules) using 
 
 So we have to use something that'll take this very Node-infected JavaScript file and spit out something that a browser can understand. There are a host of bundlers of varying complexity out there. A really simple and popular one that I like is Browserify. Let's install it.
 
-#### `npm install browserify`
-Running this at a command prompt installs Browserify into `node_modules`, and adds it to package.json and `packge-lock.json`. To use it right away, run the following in the command prompt:
+#### `npm install --save-dev browserify`
+Running this at a command prompt installs Browserify into `node_modules`, and adds it to package.json and `packge-lock.json`. The only difference between installing Browserify with `--save-dev` versus React above without is that the `--save-dev` flag will put Browserify not under the `dependencies` key in package.json, but rather a new key called `devDependencies`:
+```json
+  // ...
+  "dependencies": {
+    "react": "^16.12.0",
+    "react-dom": "^16.12.0"
+  },
+  "devDependencies": {
+    "browserify": "^16.5.0"
+  }
+  // ...
+```
+The difference between the two is that, if you eventually publish this module npmjs.com, where others can `npm install` your module, they will install all your `dependencies` but they *won't* install any of the `devDependencies`, because the latter are dependencies only while developing the library, and *not* when using it. In this case, for small personal projects, the difference between `dependencies` and `devDependencies` is negligible.
+
+Let's invoke Browserify right away: run the following in the command prompt:
 ```
 ./node_modules/.bin/browserify client.js -o client.bundle.js
 ```
@@ -158,5 +172,72 @@ This will spit out `client.bundle.js`, which contains the input `client.js` but 
 
 Go ahead and open `index.html` in your browser to hopefully see "Example 1: Hello World!"!
 
+Notice that, while the plain `client.js` file is less than 300 bytes, the bundle `client.bundle.js` is 1.2 *megabytes*, a 5000-fold weight gain. This is because much of React and React-DOM were spliced into the bundled file. A *big* part of modern frontend development is ways to make these bundles smaller—tools like Rollup and Webpack use tree-shaking to find which functions aren't being used by your code; Google Closure Compiler is an advanced compiler that statically analyzes your input to do dead-code elimination automatically; stand-alone minifiers like Uglify will replace long variable names with the shortest-possible names. None of this is necessary until you productionize your frontend app.
+
 ### Making the workflow more ergonomic
-Notice that, while the plain `client.js` file is less than 300 bytes, the bundle `client.bundle.js` is 1.2 *megabytes*, a 5000-fold weight gain. 
+
+#### `node_modules/.bin` directory
+Let's dig into just how we ran Browserify and what it did, because there's a fair amount of Node magic there.
+
+First of all, Browserify is different than the two other modules we've installed so far, React and React-DOM. The two latter modules are intended to eventually be run by a browser, not server-side in Node. However, Browserify is more of a server-side utility: it's more of a command-line tool that happens to be written in JavaScript and that makes extensive use of the server-side modules provided by Node to do things like read and write files to disk (which browsers cannot do due to security restrictions).
+
+Therefore, Browserify exports a command-line-friendly script that we can invoke to run it. It's hidden away in `node_modules/.bin/browserify`. You'll often see older packages or tutorials explicitly telling you to run things out of `node_modules/.bin` but there are more ergonomic ways to invoke Browserify from the command-line.
+
+One way is to add a `script` to package.json:
+```json
+  // ...
+  "scripts": {
+    "bundle": "browserify client.js -o client.bundle.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  // ...
+```
+With this in place, we can invoke `npm run bundle` at the command line, and npm will find the `browserify` executable script and invoke it. You can rerun `npm run bundle` every time you make a change to `client.js`.
+
+#### `fswatch`
+Rerunning the command every time is a bit annoying. There are many fancy ways to auto-run build tools and auto-reload browsers, but as you might expect, I use the simplest: `fswatch` and `xargs` are general-purpose utilities available on Unixes like macOS (where you can install it easily if you use [Homebrew](https://brew.sh/), which is lovely: `brew install fswatch findutils`). We can add another script to package.json:
+```json
+  // ...
+  "scripts": {
+    "bundle": "browserify client.js -o client.bundle.js",
+    "watch": "fswatch -0 -o -l 0.1 client.js | xargs -0 -n 1 -I% npm run bundle",
+  // ...
+```
+When you run `npm run watch`, npm kicks off `fswatch` to listen for changes in `client.js`, and when it encounters a change, it will rerun `npm run bundle`.
+
+> macOS note: if you just installed xargs via `brew install findutils`, you might need to run not xargs but `gxargs` (brew will prepend "g" for "GNU" to prevent conflict with built-in macOS xargs). `brew info findutils` gives you a tip on how to set the `PATH` variable so you don't need to prefix the "g".
+
+### More tiny React examples
+If you add a couple more `div` tags to `index.html`:
+```html
+<div id="example2"></div>
+<div id="example3"></div>
+```
+and add the following React code that demonstrates some examples in the ["Components and Props"](https://reactjs.org/docs/components-and-props.html) chapter of the React Guide:
+```js
+{
+  function Welcome(props) {
+    return ce('h1', {}, `Example 2: Hello ${props.name}!`);
+  }
+  const element = ce(Welcome, {name: 'Sara'});
+  ReactDOM.render(element, document.getElementById('example2'));
+}
+
+{
+  function Welcome(props) {
+    return ce('h2', {}, `Example 3: Hello ${props.name}!`);
+  }
+  function App() {
+    return ce(
+        'div',
+        {},
+        ce(Welcome, {name: 'Sara'}),
+        ce(Welcome, {name: 'Cahal'}),
+        ce(Welcome, {name: 'Edite'}),
+    );
+  }
+  const element = ce(App);
+  ReactDOM.render(element, document.getElementById('example3'));
+}
+```
+Assuming you have `npm run watch` running, saving these files and refreshing the browser should show you a couple more small examples.
