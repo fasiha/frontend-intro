@@ -1,3 +1,4 @@
+'use strict';
 const React = require('react');
 const ReactDOM = require('react-dom');
 
@@ -54,7 +55,6 @@ class ZipCode extends React.Component {
     this.handleChange = this.handleChange.bind(this);
     this.defaultResponse = 'enter valid zip code';
   }
-  defaultResponse;
   async handleChange(event) {
     let zip = event.target.value;
     let response = await zipToText(zip, this.defaultResponse);
