@@ -241,3 +241,82 @@ and add the following React code that demonstrates some examples in the ["Compon
 }
 ```
 Assuming you have `npm run watch` running, saving these files and refreshing the browser should show you a couple more small examples.
+
+## React Hooks
+If it wasn't for React Hooks, introduced in October 2018, I wouldn't use React. The old class-based way of defining components is error-prone and needlessly complex.
+
+After working through the React Guide using the old `React.Component` approach, you should definitely work through the [React Hooks](https://reactjs.org/docs/hooks-intro.html) section of the Guide and rewrite some of the components you've already written to use Hooks.
+
+By way of example: below is are pre-Hooks and post-Hooks implementations of a component containing a form that looks up US zip codes from the [Zippopotam.us](http://zippopotam.us/) API.
+
+> Refer to MDN's documentation on the [Fetch API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) as well as its documentation on [`async`/`await`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function) for more details on these very important browser and JavaScript techniques.
+
+```js
+async function zipToText(zip, response = '') {
+  if (/^[0-9]{5}$/.test(zip)) {
+    let fetched = await fetch('https://api.zippopotam.us/us/' + zip);
+    if (fetched.ok) {
+      let result = await fetched.json();
+      response = `${result.places[0]['place name']}, ${result.places[0].state}`;
+    } else {
+      response = `${zip} has not been assigned as a US zip code`;
+    }
+  }
+  return response;
+}
+
+class ZipCode extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {zip: '', response: ''};
+    this.handleChange = this.handleChange.bind(this);
+    this.defaultResponse = 'enter valid zip code';
+  }
+  defaultResponse;
+  async handleChange(event) {
+    let zip = event.target.value;
+    let response = await zipToText(zip, this.defaultResponse);
+    this.setState({zip, response});
+  }
+  render() {
+    return ce(
+        'div',
+        null,
+        ce('h1', null,
+           'Enter a US zip code, e.g., 90210 and 55555. Also try invalid zip codes like 12340 and 19888'),
+        ce('input',
+           {type: 'text', value: this.state.zip, onChange: this.handleChange}),
+        ce('p', null, this.state.response || this.defaultResponse),
+    )
+  }
+}
+
+const {useState} = React;
+function HookyZipCode(props) {
+  const defaultResponse = props.defaultResponse || 'enter valid zip code';
+  const [zip, setZip] = useState('');
+  const [response, setResponse] = useState('');
+  return ce(
+      'div',
+      null,
+      ce('h1', null,
+         'Enter a US zip code, e.g., 90210 and 55555. Also try invalid zip codes like 12340 and 19888'),
+      ce('input', {
+        type: 'text',
+        value: zip,
+        onChange: async (event) => {
+          const newZip = event.target.value;
+          setZip(newZip);
+          const newResponse = await zipToText(newZip, defaultResponse);
+          setResponse(newResponse);
+        },
+      }),
+      ce('p', null, response || defaultResponse),
+  );
+}
+
+ReactDOM.render(ce(ZipCode), document.getElementById('example4'));
+ReactDOM.render(ce(HookyZipCode), document.getElementById('example5'));
+```
+
+You can see this webapp live!
