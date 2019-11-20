@@ -1,6 +1,30 @@
 # Introduction to Frontend Development: How I Do It
 
-## Background
+<!-- vscode-markdown-toc -->
+* 1. [Background](#Background)
+* 2. [Setup](#Setup)
+* 3. [Let's begin](#Letsbegin)
+	* 3.1. [`mkdir frontend-intro`](#mkdirfrontend-intro)
+	* 3.2. [`npm init -y`](#npminit-y)
+		* 3.2.1. [package.json](#package.json)
+	* 3.3. [`npm install react react-dom`](#npminstallreactreact-dom)
+	* 3.4. [Let's start some React!](#LetsstartsomeReact)
+		* 3.4.1. [`index.html`](#index.html)
+		* 3.4.2. [`client.js`](#client.js)
+		* 3.4.3. [`npm install --save-dev browserify`](#npminstall--save-devbrowserify)
+	* 3.5. [Making the workflow more ergonomic](#Makingtheworkflowmoreergonomic)
+		* 3.5.1. [`node_modules/.bin` directory](#node_modules.bindirectory)
+		* 3.5.2. [`fswatch`](#fswatch)
+	* 3.6. [More tiny React examples](#MoretinyReactexamples)
+* 4. [React Hooks](#ReactHooks)
+
+<!-- vscode-markdown-toc-config
+	numbering=true
+	autoSave=true
+	/vscode-markdown-toc-config -->
+<!-- /vscode-markdown-toc -->
+
+##  1. <a name='Background'></a>Background
 
 Frontend web development is an exciting space to be because
 - JavaScript runtimes that ship with browsers like Chrome, Firefox, Safari, et al. are incredibly optimized and very secure;
@@ -17,19 +41,19 @@ Making a frontend app though is more than just "learning" a library like React t
 
 I personally have a relatively bare-bones hands-on manually-configured workflow to making frontend apps that seems to control much of the accidental complexity and which I'll describe here.
 
-## Setup
+##  2. <a name='Setup'></a>Setup
 
 1. Install [Node.js](https://nodejs.org/). It doesn't matter whether you get the older LTS (long-term support) version or the current version. Node is, at its heart, the V8 JavaScript runtime that ships with Chrome, but also includes several libraries that make it useful as a server-side programming environment like Python or Perl. This makes available a number of command-line tools, including `node`, `npm`, and `npx`.
 1. **Optional** Install [VS Code](https://code.visualstudio.com/). This is a nice modern advanced text editor. It's nice and modern and advanced in the same way as sports cars can be nice and modern and advanced: a modern car is so computerized it can seem entirely opaque to a driver or mechanic, whereas cars from fifty years ago remain much more approachable and understandable. If you have a text editor you like, please use that and don't spend thirty minutes setting up and twiddling with VS Code's settings.
 1. **Optional** Install [Git](https://git-scm.com/). This is a version control system. If I create any file on my computer that isn't being tracked by Git, I get heartburn but it isn't absolutely necessary right now. This makes the `git` command available in your command line app (e.g., Terminal or iTerm2 in macOS, Command Prompt or Powershell in Windows, xterm at al. in Linux).
 
-## Let's begin
+##  3. <a name='Letsbegin'></a>Let's begin
 Open up a command prompt (Terminal, Command Prompt, xterm, etc.) and follow along.
 
-### `mkdir frontend-intro`
+###  3.1. <a name='mkdirfrontend-intro'></a>`mkdir frontend-intro`
 Running this will create a new directory called `frontend-intro`, so consider putting this somewhere in your Documents directory.
 
-### `npm init -y`
+###  3.2. <a name='npminit-y'></a>`npm init -y`
 Running this will spit out something like this:
 ```
 $ npm init -y
@@ -53,7 +77,7 @@ If you look at the contents of the directory, you'll see `package.json`. This is
 - publish to GitHub for people to read,
 - just use as a utility that only you use, etc.
 
-#### package.json
+####  3.2.1. <a name='package.json'></a>package.json
 JSON is JavaScript Object Notation: you can paste JSON into a JavaScript Console in any browser or in Node, and it will evaluate to a JavaScript object (a "dictionary" or "associative array" or "hash table" in other languages) or array or scalar (number, string, boolean, `null`).
 
 npmjs has [documentation for package.json](https://docs.npmjs.com/files/package.json) but let's look at each of the keys by default by `npm init -y`:
@@ -67,7 +91,7 @@ npmjs has [documentation for package.json](https://docs.npmjs.com/files/package.
 
 Very often, if I'm just creating a new project to mess around, I won't bother updating `package.json` to update any of these fields until I'm well along in the project. Don't feel you must distract yourself with any of the above.
 
-### `npm install react react-dom`
+###  3.3. <a name='npminstallreactreact-dom'></a>`npm install react react-dom`
 If you run this in the command prompt, you should see something like this:
 ```
 $ npm install react react-dom
@@ -108,9 +132,9 @@ Some more notes:
 
 § The JavaScript community (among others) has embraced [Semantic Versioning (semver)](https://semver.org/), where packages' versions contain three numbers, in the `MAJOR.MINOR.PATCH` format, and the promise is that two versions of the same package will be API-compatible as long as they agree on the MAJOR version number. The caret in `"react": "^16.12.0"` says that "my package depends on any version of react that's compatible with 16.12.0, that is, that has the MAJOR version 16". (See [documentation on package.json and semver](https://docs.npmjs.com/files/package.json#dependencies).) However, over time, we realized that semver allowed too much flexibility, and for the sake of reproducible builds, npm introduced this `package-lock.json` which specifies the version number of each dependency and sub-dependency, so everyone gets reproducible builds.
 
-### Let's start some React!
+###  3.4. <a name='LetsstartsomeReact'></a>Let's start some React!
 
-#### `index.html`
+####  3.4.1. <a name='index.html'></a>`index.html`
 Create `index.html` containing the following:
 ```html
 <!DOCTYPE html>
@@ -124,7 +148,7 @@ Some people wear weird socks to express their individuality. I like to omit unne
 - creates a `div` tag into which React will load a component,
 - which happens in the JavaScript file `client.bundle.js` that we have yet to write.
 
-#### `client.js`
+####  3.4.2. <a name='client.js'></a>`client.js`
 Let's put some code inside `client.js`. This is the basic "Hello world" in ["Introducing JSX"](https://reactjs.org/docs/introducing-jsx.html) chapter of the React Guide:
 ```js
 const React = require('react');
@@ -149,7 +173,7 @@ And why can't Node use [ES2015 notation](https://devhints.io/es6#modules) using 
 
 So we have to use something that'll take this very Node-infected JavaScript file and spit out something that a browser can understand. There are a host of bundlers of varying complexity out there. A really simple and popular one that I like is Browserify. Let's install it.
 
-#### `npm install --save-dev browserify`
+####  3.4.3. <a name='npminstall--save-devbrowserify'></a>`npm install --save-dev browserify`
 Running this at a command prompt installs Browserify into `node_modules`, and adds it to package.json and `packge-lock.json`. The only difference between installing Browserify with `--save-dev` versus React above without is that the `--save-dev` flag will put Browserify not under the `dependencies` key in package.json, but rather a new key called `devDependencies`:
 ```json
   // ...
@@ -174,9 +198,9 @@ Go ahead and open `index.html` in your browser to hopefully see "Example 1: Hell
 
 Notice that, while the plain `client.js` file is less than 300 bytes, the bundle `client.bundle.js` is 1.2 *megabytes*, a 5000-fold weight gain. This is because much of React and React-DOM were spliced into the bundled file. A *big* part of modern frontend development is ways to make these bundles smaller—tools like Rollup and Webpack use tree-shaking to find which functions aren't being used by your code; Google Closure Compiler is an advanced compiler that statically analyzes your input to do dead-code elimination automatically; stand-alone minifiers like Uglify will replace long variable names with the shortest-possible names. None of this is necessary until you productionize your frontend app.
 
-### Making the workflow more ergonomic
+###  3.5. <a name='Makingtheworkflowmoreergonomic'></a>Making the workflow more ergonomic
 
-#### `node_modules/.bin` directory
+####  3.5.1. <a name='node_modules.bindirectory'></a>`node_modules/.bin` directory
 Let's dig into just how we ran Browserify and what it did, because there's a fair amount of Node magic there.
 
 First of all, Browserify is different than the two other modules we've installed so far, React and React-DOM. The two latter modules are intended to eventually be run by a browser, not server-side in Node. However, Browserify is more of a server-side utility: it's more of a command-line tool that happens to be written in JavaScript and that makes extensive use of the server-side modules provided by Node to do things like read and write files to disk (which browsers cannot do due to security restrictions).
@@ -194,7 +218,7 @@ One way is to add a `script` to package.json:
 ```
 With this in place, we can invoke `npm run bundle` at the command line, and npm will find the `browserify` executable script and invoke it. You can rerun `npm run bundle` every time you make a change to `client.js`.
 
-#### `fswatch`
+####  3.5.2. <a name='fswatch'></a>`fswatch`
 Rerunning the command every time is a bit annoying. There are many fancy ways to auto-run build tools and auto-reload browsers, but as you might expect, I use the simplest: `fswatch` and `xargs` are general-purpose utilities available on Unixes like macOS (where you can install it easily if you use [Homebrew](https://brew.sh/), which is lovely: `brew install fswatch findutils`). We can add another script to package.json:
 ```json
   // ...
@@ -207,7 +231,7 @@ When you run `npm run watch`, npm kicks off `fswatch` to listen for changes in `
 
 > macOS note: if you just installed xargs via `brew install findutils`, you might need to run not xargs but `gxargs` (brew will prepend "g" for "GNU" to prevent conflict with built-in macOS xargs). `brew info findutils` gives you a tip on how to set the `PATH` variable so you don't need to prefix the "g".
 
-### More tiny React examples
+###  3.6. <a name='MoretinyReactexamples'></a>More tiny React examples
 If you add a couple more `div` tags to `index.html`:
 ```html
 <div id="example2"></div>
@@ -242,7 +266,7 @@ and add the following React code that demonstrates some examples in the ["Compon
 ```
 Assuming you have `npm run watch` running, saving these files and refreshing the browser should show you a couple more small examples.
 
-## React Hooks
+##  4. <a name='ReactHooks'></a>React Hooks
 If it wasn't for React Hooks, introduced in October 2018, I wouldn't use React. The old class-based way of defining components is error-prone and needlessly complex.
 
 After working through the React Guide using the old `React.Component` approach, you should definitely work through the [React Hooks](https://reactjs.org/docs/hooks-intro.html) section of the Guide and rewrite some of the components you've already written to use Hooks.
