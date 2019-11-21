@@ -17,7 +17,7 @@
 		* 3.5.2. [`fswatch`](#fswatch)
 	* 3.6. [More tiny React examples](#MoretinyReactexamples)
 * 4. [React Hooks](#ReactHooks)
-* 5. [TypeScript: a critical ingredient](#TypeScript:acriticalingredient)
+* 5. [TypeScript, a critical ingredient](#TypeScriptacriticalingredient)
 	* 5.1. [TypeScript background](#TypeScriptbackground)
 	* 5.2. [`npm install --save-dev typescript`](#npminstall--save-devtypescript)
 	* 5.3. [`npx tsc --init`](#npxtsc--init)
@@ -354,7 +354,7 @@ ReactDOM.render(ce(HookyZipCode), document.getElementById('example5'));
 
 You can see this [webapp live](https://fasiha.github.io/frontend-intro/)!
 
-##  5. <a name='TypeScript:acriticalingredient'></a>TypeScript: a critical ingredient
+##  5. <a name='TypeScriptacriticalingredient'></a>TypeScript, a critical ingredient
 Alan Kay, one of the patron saints of us programmers, says, after describing the architecture of gothic cathedrals:
 
 > as complexity starts becoming more and more important, architecture's always going to dominate material (1997, [video](https://youtu.be/oKg1hTOQXoY?t=1006), [transcript](https://moryton.blogspot.com/2007/12/computer-revolution-hasnt-happened-yet.html); the whole keynote is worth watching at 2x playback)
