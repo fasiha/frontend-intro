@@ -583,5 +583,80 @@ ReactDOM.render(ce(ZipCode), document.getElementById('example4'));
 ReactDOM.render(ce(HookyZipCode), document.getElementById('example5'));
 ```
 
+Here's the difference between the JavaScript original and the above TypeScript code highlighting the differences:
+```diff
+--- client.js	2019-11-20 21:26:24.000000000 -0500
++++ client.ts	2019-11-20 21:25:32.000000000 -0500
+@@ -1,7 +1,5 @@
+-'use strict';
+-const React = require('react');
+-const ReactDOM = require('react-dom');
+-
++import React from 'react';
++import ReactDOM from 'react-dom';
+ const ce = React.createElement;
+ 
+ {
+@@ -10,7 +8,7 @@
+ }
+ 
+ {
+-  function Welcome(props) {
++  function Welcome(props: {name: string}) {
+     return ce('h1', {}, `Example 2: Hello ${props.name}!`);
+   }
+   const element = ce(Welcome, {name: 'Sara'});
+@@ -18,7 +16,7 @@
+ }
+ 
+ {
+-  function Welcome(props) {
++  function Welcome(props: {name: string}) {
+     return ce('h2', {}, `Example 3: Hello ${props.name}!`);
+   }
+   function App() {
+@@ -35,7 +33,7 @@
+ }
+ 
+ 
+-async function zipToText(zip, response = '') {
++async function zipToText(zip: string, response = '') {
+   if (/^[0-9]{5}$/.test(zip)) {
+     let fetched = await fetch('https://api.zippopotam.us/us/' + zip);
+     if (fetched.ok) {
+@@ -49,13 +47,18 @@
+ }
+ 
+ class ZipCode extends React.Component {
+-  constructor(props) {
++  constructor(props: {}) {
+     super(props);
+     this.state = {zip: '', response: ''};
+     this.handleChange = this.handleChange.bind(this);
+     this.defaultResponse = 'enter valid zip code';
+   }
+-  async handleChange(event) {
++  state: {zip: string, response: string};
++  defaultResponse: string;
++
++  // event's type isn't auto-inferred here but I got its type from studying
++  // `onChange`'s inferred type
++  async handleChange(event: React.ChangeEvent<HTMLInputElement>) {
+     let zip = event.target.value;
+     let response = await zipToText(zip, this.defaultResponse);
+     this.setState({zip, response});
+@@ -74,7 +77,7 @@
+ }
+ 
+ const {useState} = React;
+-function HookyZipCode(props) {
++function HookyZipCode(props: {defaultResponse: string}) {
+   const defaultResponse = props.defaultResponse || 'enter valid zip code';
+   const [zip, setZip] = useState('');
+   const [response, setResponse] = useState('');
+```
+
+In closing, I recommend developing one or more apps of some substance using JavaScript and React Hooks, finding the pain points (if any), and then evaluating if TypeScript will improve them. For me, TypeScript is indispensable.
+
 ##  6. <a name='ReduxandReduxHooks'></a>Redux and Redux Hooks
 (Forthcoming. For now, try to work through https://react-redux.js.org/introduction/basic-tutorial and https://react-redux.js.org/next/api/hooks. Persevere through this trying documentation!)
