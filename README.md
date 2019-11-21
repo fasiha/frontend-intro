@@ -65,7 +65,7 @@ Running this will create a new directory called `frontend-intro`, so consider pu
 
 ###  3.2. <a name='npminit-y'></a>`npm init -y`
 Running this will spit out something like this:
-```
+```console
 $ npm init -y
 Wrote to /.../frontend-intro/package.json:
 
@@ -103,7 +103,7 @@ Very often, if I'm just creating a new project to mess around, I won't bother up
 
 ###  3.3. <a name='npminstallreactreact-dom'></a>`npm install react react-dom`
 If you run this in the command prompt, you should see something like this:
-```
+```console
 $ npm install react react-dom
 npm notice created a lockfile as package-lock.json. You should commit this file.
 npm WARN frontend-intro@1.0.0 No repository field.
@@ -199,8 +199,8 @@ Running this at a command prompt installs Browserify into `node_modules`, and ad
 The difference between the two is that, if you eventually publish this module npmjs.com, where others can `npm install` your module, they will install all your `dependencies` but they *won't* install any of the `devDependencies`, because the latter are dependencies only while developing the library, and *not* when using it. In this case, for small personal projects, the difference between `dependencies` and `devDependencies` is negligible.
 
 Let's invoke Browserify right away: run the following in the command prompt:
-```
-./node_modules/.bin/browserify client.js -o client.bundle.js
+```console
+$ ./node_modules/.bin/browserify client.js -o client.bundle.js
 ```
 This will spit out `client.bundle.js`, which contains the input `client.js` but with all `require` calls replaced by the contents of the JavaScript dependencies (and sub-dependencies) being `require`d.
 
@@ -405,7 +405,7 @@ $ npx tsc --init
 ```
 is in this case equivalent to
 ```console
-./node_modules/.bin/tsc --init
+$ ./node_modules/.bin/tsc --init
 ```
 
 This will ask `tsc` (TypeScript Compiler) to create a tsconfig.json. This has a lot more options than the default package.json, so I recommend reading it (and [its docs](https://www.typescriptlang.org/docs/handbook/tsconfig-json.html)). Settings I always seem to tweak include:
