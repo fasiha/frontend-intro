@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "build": "tsc -p .",
     "bundle": "browserify client.js -o client.bundle.js",
     "watch": "fswatch -0 -o -l 0.1 client.js | xargs -0 -n 1 -I% npm run bundle",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -16,6 +17,9 @@
     "react-dom": "^16.12.0"
   },
   "devDependencies": {
-    "browserify": "^16.5.0"
+    "@types/react": "^16.9.11",
+    "@types/react-dom": "^16.9.4",
+    "browserify": "^16.5.0",
+    "typescript": "^3.7.2"
   }
 }

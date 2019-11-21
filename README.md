@@ -17,6 +17,16 @@
 		* 3.5.2. [`fswatch`](#fswatch)
 	* 3.6. [More tiny React examples](#MoretinyReactexamples)
 * 4. [React Hooks](#ReactHooks)
+* 5. [TypeScript: a critical ingredient](#TypeScript:acriticalingredient)
+	* 5.1. [TypeScript background](#TypeScriptbackground)
+	* 5.2. [`npm install --save-dev typescript`](#npminstall--save-devtypescript)
+	* 5.3. [`npx tsc --init`](#npxtsc--init)
+	* 5.4. [`npm install --save-dev @types/react @types/react-dom`](#npminstall--save-devtypesreacttypesreact-dom)
+	* 5.5. [`client.ts`](#client.ts)
+	* 5.6. [Add a `build` script](#Addabuildscript)
+	* 5.7. [VS Code setup](#VSCodesetup)
+	* 5.8. [Complete `client.ts`](#Completeclient.ts)
+* 6. [Redux and Redux Hooks](#ReduxandReduxHooks)
 
 <!-- vscode-markdown-toc-config
 	numbering=true
@@ -343,3 +353,235 @@ ReactDOM.render(ce(HookyZipCode), document.getElementById('example5'));
 ```
 
 You can see this [webapp live](https://fasiha.github.io/frontend-intro/)!
+
+##  5. <a name='TypeScript:acriticalingredient'></a>TypeScript: a critical ingredient
+Alan Kay, one of the patron saints of us programmers, says, after describing the architecture of gothic cathedrals:
+
+> as complexity starts becoming more and more important, architecture's always going to dominate material (1997, [video](https://youtu.be/oKg1hTOQXoY?t=1006), [transcript](https://moryton.blogspot.com/2007/12/computer-revolution-hasnt-happened-yet.html); the whole keynote is worth watching at 2x playback)
+
+I recommend learning the basic approach, and then building stuff with that, until you reach the limits of your building material. Only then do I recommend looking for something better. Without feeling the pinch and pain of existing approaches, it's hard to evaluate proposed improvements, which will either be better architecture or better materials.
+
+Above, I recommend starting with JavaScript and React Hooks. (As mentioned, I *don't* recommend learning the pre-Hooks approach to React component based on extending `React.Component` class.) This might suffice for you. I personally use TypeScript as a much stronger building material than JavaScript, which I'll describe below. Then, in the next section, I describe an improved architectural approach—Redux Hooks.
+
+###  5.1. <a name='TypeScriptbackground'></a>TypeScript background
+I am a *huge* fan of static typing. My first programming languages were a mix of statically and dynamically typed languages (C, Java, versus Basic, Python, Perl, Lisp), so I can't blame my upbringing. But I can definitively say that, although I've shipped big apps in dynamically typed languages like Matlab, Python, Clojure (Lisp on JVM), and JavaScript, I will likely never ship anything substantial without static types.
+
+That said, there is a hierarchy in static types—a classic example of the [Blub paradox](http://www.paulgraham.com/avg.html) as described by Paul Graham: imagine a feature in your favorite language, and then consider the languages that lack that feature. Maybe you love Java and you consider how Go lacks generics—"how do those savages get anything done?" You're looking *down* the ladder of programming power. But the paradox is that when you look **up** the ladder at *more* powerful languages than the ones you're used to, all you see is "all this other hairy stuff" that seems to be overly academic and pointless.
+
+It's easy to show that C, C++, and Java types are about the simplest and least powerful type systems you can design and still call "a type system". Much more powerful type systems exist in languages like
+- Scala (JVM language),
+- F# (.NET CLR language),
+- Elm (targets JavaScript),
+- OCaml (which inspired many of these),
+- Haskell (boss of them all), and…
+- TypeScript!
+
+TypeScript has some of the most powerful features we expect from this illustrious family, such as
+- automatic type inference so you don't have to type out every single variable's type (we rejoiced when C++ and Java got `auto` and `var` respectively, after decades of not having them), and
+- algebraic data types, also knows as union and intersection types (where the type of a variable can be `X | (Y & Z)`, i.e., either X or the union of types/interfaces Y and Z; see ["Sum Types Are Coming: What You Should Know"](https://chadaustin.me/2015/07/sum-types/)).
+
+And then it adds some unusual or unique features:
+- a rich way to type using string constants (`type Color = 'red'|'green'|'blue'` means something with type `Color` can take one of three string values) that I haven't really seen in other languages,
+- structural typing of interfaces (so `interface X = {name: string}` and `interface Y = {name: string}` both map to the same thing because their structures are the same, whereas in languages like Java with nominal typing, `X` and `Y` having different names means variables of either of these types aren't interchangeable),
+- full object-oriented support (public, private, inheritance, getters and setters),
+- incredibly tight integration with JavaScript semantics, and
+- type erasure: TypeScript does everything at compile time and everything non-JavaScript evaporates because `tsc` emits plain JavaScript code (see ["Understanding TypeScript's Type System"](https://medium.com/better-programming/understanding-typescripts-type-system-a3cdec8e95ae) for more on several of these).
+
+TypeScript (like several languages/compilers, like Elm, Fable (F# to JavaScript compiler), Scala.js, BuckleScript (OCaml to JavaScript compiler), etc.) brings a rich tradition of static typing to a language and a community that entirely lacked it. Therefore I personally feel it's valuable to be skilled at JavaScript, and understand JavaScript's oddities and idiosyncracies, before learning and using advanced TypeScript features—you don't want to be simultaneously debugging type mismatches and async/await issues.
+
+That said, there's nothing wrong with using TypeScript right away while you learn JavaScript.
+
+###  5.2. <a name='npminstall--save-devtypescript'></a>`npm install --save-dev typescript`
+By now you know what the above command will do: `npm install --save-dev typescript` will make a `typescript` subdirectory in your `node_modules` folder and add it to package.json and `package-lock.json`. This also will create a `tsc` (TypeScript Compiler) script in `node_modules/.bin`.
+
+###  5.3. <a name='npxtsc--init'></a>`npx tsc --init`
+We haven't used `npx` before but this is installed when you install Node.js, along with `node` and `npm`. `npx` is a convenient alternative to executing scripts from `node_modules/.bin`.
+
+> In fact, you can run a script in an npm module you haven't even installed (see the [announcement](https://blog.npmjs.org/post/162869356040/introducing-npx-an-npm-package-runner) for more details, but in a nutshell, `npx` will install the module in your home folder and run the script from there. This is useful when you don't even have an npm project yet to start working with, e.g., the [create-react-app](https://github.com/facebook/create-react-app#quick-overview) instructions start with `npx create-react-app my-app`.
+
+So 
+```console
+$ npx tsc --init
+```
+is in this case equivalent to
+```console
+./node_modules/.bin/tsc --init
+```
+
+This will ask `tsc` (TypeScript Compiler) to create a tsconfig.json. This has a lot more options than the default package.json, so I recommend reading it (and [its docs](https://www.typescriptlang.org/docs/handbook/tsconfig-json.html)). Settings I always seem to tweak include:
+- `"incremental": true` for incremental builds, so subsequent builds start faster,
+- `"target": "es2015"` because I don't really care about old ES5-only browsers though for maximal compability you should leave this as-is,
+- `"lib": ["es2015", "es2017.string", "dom"]`: these are TypeScript libraries to load by default, so they're available out of the box, in this case, all the ES2015 spec, ES2017's string spec, and the DOM APIs like Fetch;
+- `"downlevelIteration": true` this is a big one [for me](https://stackoverflow.com/a/48353980/500207): it allows you to loop over entries of [Set](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set) and [Map](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map) datatypes, introduced in ES2015.
+
+###  5.4. <a name='npminstall--save-devtypesreacttypesreact-dom'></a>`npm install --save-dev @types/react @types/react-dom`
+Before we start porting our React demos to TypeScript, we need to install these two modules as devDependencies because React and React-DOM npm packages do not ship with TypeScript definitions. Many JavaScript npm packages include TypeScript descriptions of the APIs the libraries export, but many others do not, and the community has put together TypeScript definitions for a dizzying number of npm packages (nearly every single major one I've ever used) under the `@types/` npm scope.
+
+###  5.5. <a name='client.ts'></a>`client.ts`
+Create a new file, `client.ts` and add the following to it: this is the TypeScript equivalent of the first `client.js` we created above.
+```ts
+import React from 'react';
+import ReactDOM from 'react-dom';
+const ce = React.createElement;
+
+{
+  const element = ce('h1', {}, 'Example 1: Hello World!');
+  ReactDOM.render(element, document.getElementById('example1'));
+}
+```
+Note that we used [ES2015 modules](https://www.typescriptlang.org/docs/handbook/modules.html), i.e., `import` instead of the Node/CommonJS-specific `require` that we used above.
+
+But other than that, the React code itself is the same.
+
+###  5.6. <a name='Addabuildscript'></a>Add a `build` script
+I recommend adding a new script to package.json even if you plan on using VS Code to invoke `tsc` (below), because you don't want to have to rely on your text editor to invoke a compiler. In package.json, add the `build` script so the this is the list of `scripts`:
+```json
+  // ...
+  "scripts": {
+    "build": "tsc -p .",
+    "bundle": "browserify client.js -o client.bundle.js",
+    "watch": "fswatch -0 -o -l 0.1 client.js | xargs -0 -n 1 -I% npm run bundle",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  // ...
+```
+Now you can run `npm run build`. Which would be equivalent to `npx tsc -p .` (and `./node_modules/.bin/tsc -p .`). Even if I use a [Makefile](https://bost.ocks.org/mike/make/) to coordinate builds, I tend to always create npm scripts to show how to do each stage of the build.
+
+Running `npx tsc -p .` invokes tsc in project mode: it compiles all the `.ts` TypeScript files in this directory to equivalent `.js` files. ***This will overwrite your existing `client.js`!*** So if you aren't using version control, beware. (You should definitely be tracking all this in git: every time you get to a nice satisfying point in your code adventure when something is working nicely, you should commit.)
+
+Note that you should always make sure you run `npm run build` before `bundle`, otherwise Browserify might pick up a stale version of `client.js`.
+
+So now run
+```console
+$ npm run build && npm run bundle
+```
+and open `index.html`.
+
+###  5.7. <a name='VSCodesetup'></a>VS Code setup
+At this point, I have to confess my love of VS Code. After years of pooh-poohing Textmate and Sublime Text, and dabbling a bit with Atom, VS Code became my default editor by virtue of cross-platform beautiful fonts, colors, and sensible defaults for my most important languages. If you *don't* want to bother messing with VS Code, either
+- adapt the `fswatch` scripts above to detect changes in `.ts` files and run `npm run build && npm run bundle` on changes, or
+- set up a simple [Makefile](https://bost.ocks.org/mike/make/)—it's really easy!
+
+But if you're willing to try VS Code, they have [TypeScript-specific documentation](https://code.visualstudio.com/docs/typescript/typescript-compiling#_step-2-run-the-typescript-build) on running a build task that watches for changes in TypeScript files and invokes tsc automatically:
+1. open the command palette (⇧⌘P on macOS),
+1. type in "run build task" and select "Task: Run Build Task",
+1. select "tsc: watch - tsconfig.json".
+
+This will open a terminal in the bottom of VS Code which should say "Starting compilation in watch mode... Found 0 errors. Watching for file changes." You can close this terminal, it'll keep running in the background.
+
+You'll still want to run `npm run watch` in another command prompt though! With the above, VS Code is just calling `tsc`: we still need Browserify to rerun whenever `client.js` is updated.
+
+###  5.8. <a name='Completeclient.ts'></a>Complete `client.ts`
+Here's the full contents of `client.ts` that will build.
+
+React has lovely TypeScript support for the most part. Sometimes, as in the type of the `event` parameter below in the non-Hooks version of the zip code lookup component, you have to dig a bit to find what type something's supposed to be to take full advantage of the type checker, but this is invariably worth it because using `any` to circumvent type checks is lazy and likely to cause problems down the road.
+
+```ts
+import React from 'react';
+import ReactDOM from 'react-dom';
+const ce = React.createElement;
+
+{
+  const element = ce('h1', {}, 'Example 1: Hello World!');
+  ReactDOM.render(element, document.getElementById('example1'));
+}
+
+{
+  function Welcome(props: {name: string}) {
+    return ce('h1', {}, `Example 2: Hello ${props.name}!`);
+  }
+  const element = ce(Welcome, {name: 'Sara'});
+  ReactDOM.render(element, document.getElementById('example2'));
+}
+
+{
+  function Welcome(props: {name: string}) {
+    return ce('h2', {}, `Example 3: Hello ${props.name}!`);
+  }
+  function App() {
+    return ce(
+        'div',
+        {},
+        ce(Welcome, {name: 'Sara'}),
+        ce(Welcome, {name: 'Cahal'}),
+        ce(Welcome, {name: 'Edite'}),
+    );
+  }
+  const element = ce(App);
+  ReactDOM.render(element, document.getElementById('example3'));
+}
+
+
+async function zipToText(zip: string, response = '') {
+  if (/^[0-9]{5}$/.test(zip)) {
+    let fetched = await fetch('https://api.zippopotam.us/us/' + zip);
+    if (fetched.ok) {
+      let result = await fetched.json();
+      response = `${result.places[0]['place name']}, ${result.places[0].state}`;
+    } else {
+      response = `${zip} has not been assigned as a US zip code`;
+    }
+  }
+  return response;
+}
+
+class ZipCode extends React.Component {
+  constructor(props: {}) {
+    super(props);
+    this.state = {zip: '', response: ''};
+    this.handleChange = this.handleChange.bind(this);
+    this.defaultResponse = 'enter valid zip code';
+  }
+  state: {zip: string, response: string};
+  defaultResponse: string;
+
+  // event's type isn't auto-inferred here but I got its type from studying
+  // `onChange`'s inferred type
+  async handleChange(event: React.ChangeEvent<HTMLInputElement>) {
+    let zip = event.target.value;
+    let response = await zipToText(zip, this.defaultResponse);
+    this.setState({zip, response});
+  }
+  render() {
+    return ce(
+        'div',
+        null,
+        ce('h1', null,
+           'Enter a US zip code, e.g., 90210 and 55555. Also try invalid zip codes like 12340 and 19888'),
+        ce('input',
+           {type: 'text', value: this.state.zip, onChange: this.handleChange}),
+        ce('p', null, this.state.response || this.defaultResponse),
+    )
+  }
+}
+
+const {useState} = React;
+function HookyZipCode(props: {defaultResponse: string}) {
+  const defaultResponse = props.defaultResponse || 'enter valid zip code';
+  const [zip, setZip] = useState('');
+  const [response, setResponse] = useState('');
+  return ce(
+      'div',
+      null,
+      ce('h1', null,
+         'Enter a US zip code, e.g., 90210 and 55555. Also try invalid zip codes like 12340 and 19888'),
+      ce('input', {
+        type: 'text',
+        value: zip,
+        onChange: async (event) => {
+          const newZip = event.target.value;
+          setZip(newZip);
+          const newResponse = await zipToText(newZip, defaultResponse);
+          setResponse(newResponse);
+        },
+      }),
+      ce('p', null, response || defaultResponse),
+  );
+}
+
+ReactDOM.render(ce(ZipCode), document.getElementById('example4'));
+ReactDOM.render(ce(HookyZipCode), document.getElementById('example5'));
+```
+
+##  6. <a name='ReduxandReduxHooks'></a>Redux and Redux Hooks
+(Forthcoming. For now, try to work through https://react-redux.js.org/introduction/basic-tutorial and https://react-redux.js.org/next/api/hooks. Persevere through this trying documentation!)
